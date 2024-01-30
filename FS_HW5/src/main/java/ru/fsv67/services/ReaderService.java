@@ -1,9 +1,9 @@
 package ru.fsv67.services;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import ru.fsv67.models.Issuance;
 import ru.fsv67.models.Reader;
-import ru.fsv67.repositories.IssuanceRepository;
 import ru.fsv67.repositories.ReaderRepository;
 
 import java.util.List;
@@ -13,11 +13,28 @@ import java.util.Objects;
 @Service
 public class ReaderService {
     private final ReaderRepository readerRepository;
-    private final IssuanceRepository issuanceRepository;
+    private final IssuanceService issuanceService;
 
-    public ReaderService(ReaderRepository readerRepository, IssuanceRepository issuanceRepository) {
+    public ReaderService(ReaderRepository readerRepository, IssuanceService issuanceService) {
         this.readerRepository = readerRepository;
-        this.issuanceRepository = issuanceRepository;
+        this.issuanceService = issuanceService;
+    }
+
+    /**
+     * Первоначальные тестовые данные
+     */
+    @PostConstruct
+    void generateData() {
+        readerRepository.saveAll(
+                List.of(
+                        new Reader("Алексей"),
+                        new Reader("Николай"),
+                        new Reader("Михаил"),
+                        new Reader("Вераника"),
+                        new Reader("Сергей"),
+                        new Reader("Марина")
+                )
+        );
     }
 
     /**
@@ -27,7 +44,7 @@ public class ReaderService {
      * @return если список не пуст, то метод возвращает список выдачи книг, иначе исключение
      */
     public List<Issuance> readerIssuanceListById(long id) {
-        List<Issuance> list = issuanceRepository.getIssuanceListByIdReader(id);
+        List<Issuance> list = issuanceService.getIssuanceByIdReader(id);
         if (list.isEmpty()) {
             throw new NoSuchElementException("Читателю с ID = " + id + " книги не выдавались");
         }
@@ -41,7 +58,7 @@ public class ReaderService {
      * @return если данные полученные не пусты, то метод возвращает читателя по ID, иначе исключение
      */
     public Reader getReaderById(long id) {
-        Reader reader = readerRepository.getReaderById(id);
+        Reader reader = readerRepository.findById(id).get();
         if (Objects.isNull(reader)) {
             throw new NoSuchElementException("Читатель с ID = " + id + " не найдена");
         }
@@ -54,7 +71,7 @@ public class ReaderService {
      * @return если список не пуст, то метод возвращает список читателей, иначе исключение
      */
     public List<Reader> getReaderList() {
-        List<Reader> readers = readerRepository.getReaderList();
+        List<Reader> readers = readerRepository.findAll();
         if (readers.isEmpty()) {
             throw new NoSuchElementException("Список читателей пуст");
         }
@@ -72,7 +89,7 @@ public class ReaderService {
         if (reader.getName().isEmpty()) {
             throw new RuntimeException("Имя читателя не задано");
         }
-        return readerRepository.saveReader(reader);
+        return readerRepository.save(reader);
     }
 
     /**
@@ -82,7 +99,8 @@ public class ReaderService {
      * @return информацию удаленного читателя
      */
     public Reader deleteReaderById(long id) {
-        Reader reader = readerRepository.deleteReaderById(id);
+        Reader reader = getReaderById(id);
+        readerRepository.deleteById(id);
         if (Objects.isNull(reader)) {
             throw new NoSuchElementException("Читатель с ID = " + id + " не найдена");
         }

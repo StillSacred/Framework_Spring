@@ -1,13 +1,22 @@
 package ru.fsv67.models;
 
+import jakarta.persistence.*;
 import lombok.Data;
 
+@Entity
 @Data
 public class Book {
     private static long idCounter = 1L;
 
-    private final long id;
-    private final String name;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "name")
+    private String name;
+
+    public Book() {
+    }
 
     public Book(String name) {
         this.id = idCounter++;

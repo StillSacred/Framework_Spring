@@ -1,5 +1,6 @@
 package ru.fsv67.services;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 import ru.fsv67.models.Book;
 import ru.fsv67.repositories.BookRepository;
@@ -20,13 +21,30 @@ public class BookService {
     }
 
     /**
+     * Первоначальные тестовые данные
+     */
+    @PostConstruct
+    void generateData() {
+        bookRepository.saveAll(
+                List.of(
+                        new Book("Чистый код"),
+                        new Book("Паттерны проектирования"),
+                        new Book("Совершенный код"),
+                        new Book("Программист-прагматик"),
+                        new Book("Идеальный программист"),
+                        new Book("Карьера программиста")
+                )
+        );
+    }
+
+    /**
      * Метод проверки информации о книге
      *
      * @param id идентификатор книги
      * @return если данные не пусты, то метод возвращает книгу по идентификатору, иначе исключение
      */
     public Book getBookById(long id) {
-        Book book = bookRepository.getBookById(id);
+        Book book = bookRepository.findById(id).get();
         if (Objects.isNull(book)) {
             throw new NoSuchElementException("Книга с ID = " + id + " не найдена");
         }
@@ -39,7 +57,7 @@ public class BookService {
      * @return если список не пуст, то метод возвращает список книг, иначе исключение
      */
     public List<Book> getBooksList() {
-        List<Book> books = bookRepository.getBooksList();
+        List<Book> books = bookRepository.findAll();
         if (books.isEmpty()) {
             throw new NoSuchElementException("Список книг в библиотеке пуст");
         }
@@ -56,7 +74,7 @@ public class BookService {
         if (book.getName().isEmpty()) {
             throw new RuntimeException("Название книги не задано");
         }
-        return bookRepository.saveBook(book);
+        return bookRepository.save(book);
     }
 
     /**
@@ -66,7 +84,8 @@ public class BookService {
      * @return описание удаленной книги
      */
     public Book deleteBookById(long id) {
-        Book book = bookRepository.deleteBookById(id);
+        Book book = getBookById(id);
+        bookRepository.deleteById(id);
         if (Objects.isNull(book)) {
             throw new NoSuchElementException("Книга с ID = " + id + " не найдена");
         }

@@ -1,5 +1,8 @@
 package ru.fsv67.models;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -7,21 +10,32 @@ import java.time.LocalDateTime;
 /**
  * Класс описывает процесс выдачи книги в БД
  */
+@Entity
 @Data
 public class Issuance {
     private static long idCounter = 1L;
 
-    private final long id;
-    private final long bookId;
-    private final long readerId;
+    @Id
+    private Long id;
+
+    @Column(name = "book_id")
+    private Long bookId;
+
+    @Column(name = "reader_id")
+    private Long readerId;
     /**
      * Дата выдачи книги
      */
-    private final LocalDateTime issuance_at;
+    @Column(name = "issuance_at")
+    private LocalDateTime issuance_at;
     /**
      * Дата возврата книги
      */
+    @Column(name = "returned_at")
     private LocalDateTime returned_at;
+
+    public Issuance() {
+    }
 
     public Issuance(long bookId, long readerId) {
         this.id = idCounter++;
